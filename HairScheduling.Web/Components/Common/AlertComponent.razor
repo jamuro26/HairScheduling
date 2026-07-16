@@ -1,0 +1,40 @@
+@namespace HairScheduling.Web.Components.Common
+
+<div class="alert alert-@(IsSuccess ? "success" : "danger") alert-dismissible fade show" role="alert" style="display: @(IsVisible ? "block" : "none")">
+    @Message
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" @onclick="Close"></button>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public string Message { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsSuccess { get; set; } = true;
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private async Task Close()
+    {
+        IsVisible = false;
+        await OnClose.InvokeAsync();
+    }
+
+    public void Show(string message, bool success = true)
+    {
+        Message = message;
+        IsSuccess = success;
+        IsVisible = true;
+        StateHasChanged();
+    }
+
+    public void Hide()
+    {
+        IsVisible = false;
+        StateHasChanged();
+    }
+}

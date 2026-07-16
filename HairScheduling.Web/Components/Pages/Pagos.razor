@@ -1,0 +1,181 @@
+@page "/pagos"
+@using HairScheduling.Models
+@using HairScheduling.Web.Services
+@using HairScheduling.Web.Components.Common
+@inject PagoService PagoService
+@inject CitaService CitaService
+@rendermode InteractiveServer
+
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h1>Gestión de Pagos</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-success" @onclick="AbrirFormulario">
+                <i class="bi bi-plus"></i> Registrar Pago
+            </button>
+        </div>
+    </div>
+
+    <AlertComponent @ref="AlertComp" />
+
+    @if (cargando)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Pagado</h5>
+                        <h3>@pagos.Sum(p => p.Monto).ToString("C")</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Cita</th>
+                        <th>Monto</th>
+                        <th>Método</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pago in pagos)
+                    {
+                        <tr>
+                            <td>#@pago.CitaId</td>
+                            <td>@pago.Monto.ToString("C")</td>
+                            <td>@pago.MetodoPago</td>
+                            <td>@pago.FechaPago.ToString("dd/MM/yyyy")</td>
+                            <td><span class="badge bg-success">@pago.Estado</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-danger" @onclick="() => ConfirmarEliminar(pago)">Eliminar</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <ModalComponent @ref="ModalComp" Title="Registrar Pago" ConfirmButtonText="Guardar">
+        <EditForm Model="pagoForm" OnValidSubmit="GuardarPago">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label class="form-label">Cita *</label>
+                <InputSelect class="form-control" @bind-Value="pagoForm.CitaId">
+                    <option value="0">-- Seleccionar --</option>
+                    @foreach (var cita in citas)
+                    {
+                        <option value="@cita.Id">Cita #@cita.Id</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => pagoForm.CitaId" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Monto *</label>
+                <InputNumber class="form-control" @bind-Value="pagoForm.Monto" step="0.01" />
+                <ValidationMessage For="() => pagoForm.Monto" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Método de Pago *</label>
+                <InputSelect class="form-control" @bind-Value="pagoForm.MetodoPago">
+                    <option>-- Seleccionar --</option>
+                    <option>Efectivo</option>
+                    <option>Tarjeta Crédito</option>
+                    <option>Tarjeta Débito</option>
+                    <option>Transferencia</option>
+                </InputSelect>
+                <ValidationMessage For="() => pagoForm.MetodoPago" />
+            </div>
+        </EditForm>
+    </ModalComponent>
+
+    <ModalComponent @ref="ModalConfirmComp" Title="Confirmar eliminación" ConfirmButtonText="Eliminar" OnConfirmCallback="EliminarPago">
+        <p>¿Está seguro de que desea eliminar este pago?</p>
+    </ModalComponent>
+</div>
+
+@code {
+    private PagoService? _pagoService;
+    private List<Pago> pagos = [];
+    private List<Cita> citas = [];
+    private Pago pagoForm = new();
+    private AlertComponent? AlertComp;
+    private ModalComponent? ModalComp;
+    private ModalComponent? ModalConfirmComp;
+    private bool cargando = true;
+    private int pagoEnEliminar = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _pagoService = PagoService;
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        cargando = true;
+        pagos = await _pagoService!.ObtenerTodos();
+        citas = await CitaService.ObtenerTodos();
+        cargando = false;
+    }
+
+    private void AbrirFormulario()
+    {
+        pagoForm = new Pago { FechaPago = DateTime.UtcNow, Estado = "Completado" };
+        ModalComp?.Show();
+    }
+
+    private async Task GuardarPago()
+    {
+        try
+        {
+            var resultado = await _pagoService!.Crear(pagoForm);
+            AlertComp?.Show(resultado > 0 ? "Pago registrado exitosamente" : "Error al registrar pago", resultado > 0);
+            ModalComp?.Close();
+            await CargarDatos();
+        }
+        catch (Exception ex)
+        {
+            AlertComp?.Show($"Error: {ex.Message}", false);
+        }
+    }
+
+    private void ConfirmarEliminar(Pago pago)
+    {
+        pagoEnEliminar = pago.Id;
+        ModalConfirmComp?.Show();
+    }
+
+    private async Task EliminarPago()
+    {
+        try
+        {
+            var resultado = await _pagoService!.Eliminar(pagoEnEliminar);
+            AlertComp?.Show(resultado > 0 ? "Pago eliminado exitosamente" : "Error al eliminar pago", resultado > 0);
+            await CargarDatos();
+        }
+        catch (Exception ex)
+        {
+            AlertComp?.Show($"Error: {ex.Message}", false);
+        }
+    }
+}

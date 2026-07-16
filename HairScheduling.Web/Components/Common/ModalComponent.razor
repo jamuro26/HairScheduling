@@ -1,0 +1,54 @@
+@namespace HairScheduling.Web.Components.Common
+
+<div class="modal" tabindex="-1" style="@(IsVisible ? "display: block; background-color: rgba(0,0,0,0.5);" : "display: none;")">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            <div class="modal-body">
+                @ChildContent
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="Close">Cancelar</button>
+                <button type="button" class="btn btn-primary" @onclick="OnConfirm">@ConfirmButtonText</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Confirmar";
+
+    [Parameter]
+    public string ConfirmButtonText { get; set; } = "Aceptar";
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public EventCallback OnConfirmCallback { get; set; }
+
+    public async Task OnConfirm()
+    {
+        await OnConfirmCallback.InvokeAsync();
+        Close();
+    }
+
+    public void Close()
+    {
+        IsVisible = false;
+        StateHasChanged();
+    }
+
+    public void Show()
+    {
+        IsVisible = true;
+        StateHasChanged();
+    }
+}

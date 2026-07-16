@@ -1,0 +1,150 @@
+@page "/clientes"
+@using HairScheduling.Models
+@using HairScheduling.Web.Services
+@using HairScheduling.Web.Components.Common
+@inject ClienteService ClienteService
+@rendermode InteractiveServer
+
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h1>Gestión de Clientes</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-success" @onclick="AbrirFormulario">
+                <i class="bi bi-plus"></i> Nuevo Cliente
+            </button>
+        </div>
+    </div>
+
+    <AlertComponent @ref="AlertComp" />
+
+    @if (cargando)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <DataTableComponent TItem="Cliente" Items="clientes" OnEdit="EditarCliente" OnDelete="ConfirmarEliminar" />
+    }
+
+    <ModalComponent @ref="ModalComp" Title="@(editando ? "Editar Cliente" : "Nuevo Cliente")" ConfirmButtonText="Guardar">
+        <EditForm Model="clienteForm" OnValidSubmit="GuardarCliente">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label class="form-label">Nombre *</label>
+                <InputText class="form-control" @bind-Value="clienteForm.Nombre" />
+                <ValidationMessage For="() => clienteForm.Nombre" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email *</label>
+                <InputText type="email" class="form-control" @bind-Value="clienteForm.Email" />
+                <ValidationMessage For="() => clienteForm.Email" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Teléfono</label>
+                <InputText class="form-control" @bind-Value="clienteForm.Telefono" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    <InputCheckbox @bind-Value="clienteForm.Activo" />
+                    Activo
+                </label>
+            </div>
+        </EditForm>
+    </ModalComponent>
+
+    <ModalComponent @ref="ModalConfirmComp" Title="Confirmar eliminación" ConfirmButtonText="Eliminar" OnConfirmCallback="EliminarCliente">
+        <p>¿Está seguro de que desea eliminar este cliente?</p>
+    </ModalComponent>
+</div>
+
+@code {
+    private ClienteService? _clienteService;
+    private List<Cliente> clientes = [];
+    private Cliente clienteForm = new();
+    private AlertComponent? AlertComp;
+    private ModalComponent? ModalComp;
+    private ModalComponent? ModalConfirmComp;
+    private bool cargando = true;
+    private bool editando = false;
+    private int clienteEnEliminar = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _clienteService = ClienteService;
+        await CargarClientes();
+    }
+
+    private async Task CargarClientes()
+    {
+        cargando = true;
+        clientes = await _clienteService!.ObtenerTodos();
+        cargando = false;
+    }
+
+    private void AbrirFormulario()
+    {
+        editando = false;
+        clienteForm = new Cliente();
+        ModalComp?.Show();
+    }
+
+    private async Task EditarCliente(Cliente cliente)
+    {
+        editando = true;
+        clienteForm = cliente;
+        ModalComp?.Show();
+    }
+
+    private async Task GuardarCliente()
+    {
+        try
+        {
+            if (editando)
+            {
+                var resultado = await _clienteService!.Actualizar(clienteForm.Id, clienteForm);
+                AlertComp?.Show(resultado > 0 ? "Cliente actualizado exitosamente" : "Error al actualizar cliente", resultado > 0);
+            }
+            else
+            {
+                var resultado = await _clienteService!.Crear(clienteForm);
+                AlertComp?.Show(resultado > 0 ? "Cliente creado exitosamente" : "Error al crear cliente", resultado > 0);
+            }
+            ModalComp?.Close();
+            await CargarClientes();
+        }
+        catch (Exception ex)
+        {
+            AlertComp?.Show($"Error: {ex.Message}", false);
+        }
+    }
+
+    private void ConfirmarEliminar(Cliente cliente)
+    {
+        clienteEnEliminar = cliente.Id;
+        ModalConfirmComp?.Show();
+    }
+
+    private async Task EliminarCliente()
+    {
+        try
+        {
+            var resultado = await _clienteService!.Eliminar(clienteEnEliminar);
+            AlertComp?.Show(resultado > 0 ? "Cliente eliminado exitosamente" : "Error al eliminar cliente", resultado > 0);
+            await CargarClientes();
+        }
+        catch (Exception ex)
+        {
+            AlertComp?.Show($"Error: {ex.Message}", false);
+        }
+    }
+}

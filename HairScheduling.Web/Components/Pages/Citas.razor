@@ -1,0 +1,207 @@
+@page "/citas"
+@using HairScheduling.Models
+@using HairScheduling.Web.Services
+@using HairScheduling.Web.Components.Common
+@inject CitaService CitaService
+@inject ClienteService ClienteService
+@inject EmpleadoService EmpleadoService
+@rendermode InteractiveServer
+
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h1>Gestión de Citas</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-success" @onclick="AbrirFormulario">
+                <i class="bi bi-plus"></i> Nueva Cita
+            </button>
+        </div>
+    </div>
+
+    <AlertComponent @ref="AlertComp" />
+
+    @if (cargando)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Empleado</th>
+                        <th>Fecha/Hora</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cita in citas)
+                    {
+                        <tr>
+                            <td>@ObtenerNombreCliente(cita.ClienteId)</td>
+                            <td>@ObtenerNombreEmpleado(cita.EmpleadoId)</td>
+                            <td>@cita.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td><span class="badge bg-info">@cita.Estado</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" @onclick="() => EditarCita(cita)">Editar</button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => ConfirmarEliminar(cita)">Eliminar</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <ModalComponent @ref="ModalComp" Title="@(editando ? "Editar Cita" : "Nueva Cita")" ConfirmButtonText="Guardar">
+        <EditForm Model="citaForm" OnValidSubmit="GuardarCita">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label class="form-label">Cliente *</label>
+                <InputSelect class="form-control" @bind-Value="citaForm.ClienteId">
+                    <option value="0">-- Seleccionar --</option>
+                    @foreach (var cliente in clientes)
+                    {
+                        <option value="@cliente.Id">@cliente.Nombre</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => citaForm.ClienteId" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Empleado *</label>
+                <InputSelect class="form-control" @bind-Value="citaForm.EmpleadoId">
+                    <option value="0">-- Seleccionar --</option>
+                    @foreach (var empleado in empleados)
+                    {
+                        <option value="@empleado.Id">@empleado.Nombre</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => citaForm.EmpleadoId" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Fecha y Hora *</label>
+                <input type="datetime-local" class="form-control" @bind="citaForm.FechaHora" />
+                <ValidationMessage For="() => citaForm.FechaHora" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Estado</label>
+                <InputSelect class="form-control" @bind-Value="citaForm.Estado">
+                    <option>Pendiente</option>
+                    <option>Confirmada</option>
+                    <option>Completada</option>
+                    <option>Cancelada</option>
+                </InputSelect>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Notas</label>
+                <InputTextArea class="form-control" @bind-Value="citaForm.Notas" rows="3" />
+            </div>
+        </EditForm>
+    </ModalComponent>
+
+    <ModalComponent @ref="ModalConfirmComp" Title="Confirmar eliminación" ConfirmButtonText="Eliminar" OnConfirmCallback="EliminarCita">
+        <p>¿Está seguro de que desea eliminar esta cita?</p>
+    </ModalComponent>
+</div>
+
+@code {
+    private CitaService? _citaService;
+    private List<Cita> citas = [];
+    private List<Cliente> clientes = [];
+    private List<Empleado> empleados = [];
+    private Cita citaForm = new();
+    private AlertComponent? AlertComp;
+    private ModalComponent? ModalComp;
+    private ModalComponent? ModalConfirmComp;
+    private bool cargando = true;
+    private bool editando = false;
+    private int citaEnEliminar = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _citaService = CitaService;
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        cargando = true;
+        citas = await _citaService!.ObtenerTodos();
+        clientes = await ClienteService.ObtenerTodos();
+        empleados = await EmpleadoService.ObtenerTodos();
+        cargando = false;
+    }
+
+    private string ObtenerNombreCliente(int id) => clientes.FirstOrDefault(c => c.Id == id)?.Nombre ?? "Desconocido";
+    private string ObtenerNombreEmpleado(int id) => empleados.FirstOrDefault(e => e.Id == id)?.Nombre ?? "Desconocido";
+
+    private void AbrirFormulario()
+    {
+        editando = false;
+        citaForm = new Cita { FechaHora = DateTime.Now, Estado = "Pendiente" };
+        ModalComp?.Show();
+    }
+
+    private async Task EditarCita(Cita cita)
+    {
+        editando = true;
+        citaForm = cita;
+        ModalComp?.Show();
+    }
+
+    private async Task GuardarCita()
+    {
+        try
+        {
+            if (editando)
+            {
+                var resultado = await _citaService!.Actualizar(citaForm.Id, citaForm);
+                AlertComp?.Show(resultado > 0 ? "Cita actualizada exitosamente" : "Error al actualizar cita", resultado > 0);
+            }
+            else
+            {
+                var resultado = await _citaService!.Crear(citaForm);
+                AlertComp?.Show(resultado > 0 ? "Cita creada exitosamente" : "Error al crear cita", resultado > 0);
+            }
+            ModalComp?.Close();
+            await CargarDatos();
+        }
+        catch (Exception ex)
+        {
+            AlertComp?.Show($"Error: {ex.Message}", false);
+        }
+    }
+
+    private void ConfirmarEliminar(Cita cita)
+    {
+        citaEnEliminar = cita.Id;
+        ModalConfirmComp?.Show();
+    }
+
+    private async Task EliminarCita()
+    {
+        try
+        {
+            var resultado = await _citaService!.Eliminar(citaEnEliminar);
+            AlertComp?.Show(resultado > 0 ? "Cita eliminada exitosamente" : "Error al eliminar cita", resultado > 0);
+            await CargarDatos();
+        }
+        catch (Exception ex)
+        {
+            AlertComp?.Show($"Error: {ex.Message}", false);
+        }
+    }
+}

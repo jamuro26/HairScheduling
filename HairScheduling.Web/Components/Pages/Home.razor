@@ -1,7 +1,207 @@
 ﻿@page "/"
+@using HairScheduling.Models
+@using HairScheduling.Web.Services
+@inject ClienteService ClienteService
+@inject EmpleadoService EmpleadoService
+@inject ServicioService ServicioService
+@inject CitaService CitaService
+@inject PagoService PagoService
+@rendermode InteractiveServer
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard - Hair Scheduling</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container-fluid mt-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5">Dashboard</h1>
+            <p class="lead">Bienvenido al sistema de gestión Hair Scheduling</p>
+        </div>
+    </div>
 
-Welcome to your new app.
+    @if (cargando)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h5 class="card-title text-muted mb-0">Total Clientes</h5>
+                                <h3 class="card-text text-primary">@totalClientes</h3>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="bi bi-people-fill" style="font-size: 2rem; color: #0d6efd;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h5 class="card-title text-muted mb-0">Total Empleados</h5>
+                                <h3 class="card-text text-success">@totalEmpleados</h3>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="bi bi-person-badge-fill" style="font-size: 2rem; color: #198754;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h5 class="card-title text-muted mb-0">Servicios Activos</h5>
+                                <h3 class="card-text text-warning">@totalServicios</h3>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="bi bi-briefcase-fill" style="font-size: 2rem; color: #ffc107;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h5 class="card-title text-muted mb-0">Citas Pendientes</h5>
+                                <h3 class="card-text text-danger">@citasPendientes</h3>
+                            </div>
+                            <div class="ms-auto">
+                                <i class="bi bi-calendar-event-fill" style="font-size: 2rem; color: #dc3545;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Citas Próximas</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (citasProximas.Count > 0)
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var cita in citasProximas.Take(5))
+                                {
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                            <h6 class="mb-1">Cita #@cita.Id</h6>
+                                            <small class="text-muted">@cita.FechaHora.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </div>
+                                        <p class="mb-1 text-muted"><small>Estado: <span class="badge bg-info">@cita.Estado</span></small></p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted text-center mb-0">No hay citas próximas</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Ingresos Totales</h5>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="text-success mb-3">@ingresosTotales.ToString("C")</h2>
+                        <p class="text-muted mb-0"><small>Total de pagos registrados en el sistema</small></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Acciones Rápidas</h5>
+                    </div>
+                    <div class="card-body">
+                        <a href="/clientes" class="btn btn-primary me-2">
+                            <i class="bi bi-people-fill"></i> Gestionar Clientes
+                        </a>
+                        <a href="/empleados" class="btn btn-success me-2">
+                            <i class="bi bi-person-badge-fill"></i> Gestionar Empleados
+                        </a>
+                        <a href="/servicios" class="btn btn-warning me-2">
+                            <i class="bi bi-briefcase-fill"></i> Gestionar Servicios
+                        </a>
+                        <a href="/citas" class="btn btn-danger me-2">
+                            <i class="bi bi-calendar-event-fill"></i> Gestionar Citas
+                        </a>
+                        <a href="/pagos" class="btn btn-info">
+                            <i class="bi bi-credit-card-fill"></i> Ver Pagos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private bool cargando = true;
+    private int totalClientes = 0;
+    private int totalEmpleados = 0;
+    private int totalServicios = 0;
+    private int citasPendientes = 0;
+    private decimal ingresosTotales = 0;
+    private List<Cita> citasProximas = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarEstadisticas();
+    }
+
+    private async Task CargarEstadisticas()
+    {
+        cargando = true;
+        try
+        {
+            var clientes = await ClienteService.ObtenerTodos();
+            var empleados = await EmpleadoService.ObtenerTodos();
+            var servicios = await ServicioService.ObtenerTodos();
+            var citas = await CitaService.ObtenerTodos();
+            var pagos = await PagoService.ObtenerTodos();
+
+            totalClientes = clientes.Count;
+            totalEmpleados = empleados.Count;
+            totalServicios = servicios.Count(s => s.Activo);
+            citasPendientes = citas.Count(c => c.Estado == "Pendiente");
+            citasProximas = citas.OrderBy(c => c.FechaHora).ToList();
+            ingresosTotales = pagos.Sum(p => p.Monto);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando estadísticas: {ex.Message}");
+        }
+        finally
+        {
+            cargando = false;
+        }
+    }
+}
+

@@ -1,0 +1,150 @@
+@page "/empleados"
+@using HairScheduling.Models
+@using HairScheduling.Web.Services
+@using HairScheduling.Web.Components.Common
+@inject EmpleadoService EmpleadoService
+@rendermode InteractiveServer
+
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h1>Gestión de Empleados</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-success" @onclick="AbrirFormulario">
+                <i class="bi bi-plus"></i> Nuevo Empleado
+            </button>
+        </div>
+    </div>
+
+    <AlertComponent @ref="AlertComp" />
+
+    @if (cargando)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <DataTableComponent TItem="Empleado" Items="empleados" OnEdit="EditarEmpleado" OnDelete="ConfirmarEliminar" />
+    }
+
+    <ModalComponent @ref="ModalComp" Title="@(editando ? "Editar Empleado" : "Nuevo Empleado")" ConfirmButtonText="Guardar">
+        <EditForm Model="empleadoForm" OnValidSubmit="GuardarEmpleado">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label class="form-label">Nombre *</label>
+                <InputText class="form-control" @bind-Value="empleadoForm.Nombre" />
+                <ValidationMessage For="() => empleadoForm.Nombre" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email *</label>
+                <InputText type="email" class="form-control" @bind-Value="empleadoForm.Email" />
+                <ValidationMessage For="() => empleadoForm.Email" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Teléfono</label>
+                <InputText class="form-control" @bind-Value="empleadoForm.Telefono" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    <InputCheckbox @bind-Value="empleadoForm.Activo" />
+                    Activo
+                </label>
+            </div>
+        </EditForm>
+    </ModalComponent>
+
+    <ModalComponent @ref="ModalConfirmComp" Title="Confirmar eliminación" ConfirmButtonText="Eliminar" OnConfirmCallback="EliminarEmpleado">
+        <p>¿Está seguro de que desea eliminar este empleado?</p>
+    </ModalComponent>
+</div>
+
+@code {
+    private EmpleadoService? _empleadoService;
+    private List<Empleado> empleados = [];
+    private Empleado empleadoForm = new();
+    private AlertComponent? AlertComp;
+    private ModalComponent? ModalComp;
+    private ModalComponent? ModalConfirmComp;
+    private bool cargando = true;
+    private bool editando = false;
+    private int empleadoEnEliminar = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _empleadoService = EmpleadoService;
+        await CargarEmpleados();
+    }
+
+    private async Task CargarEmpleados()
+    {
+        cargando = true;
+        empleados = await _empleadoService!.ObtenerTodos();
+        cargando = false;
+    }
+
+    private void AbrirFormulario()
+    {
+        editando = false;
+        empleadoForm = new Empleado();
+        ModalComp?.Show();
+    }
+
+    private async Task EditarEmpleado(Empleado empleado)
+    {
+        editando = true;
+        empleadoForm = empleado;
+        ModalComp?.Show();
+    }
+
+    private async Task GuardarEmpleado()
+    {
+        try
+        {
+            if (editando)
+            {
+                var resultado = await _empleadoService!.Actualizar(empleadoForm.Id, empleadoForm);
+                AlertComp?.Show(resultado > 0 ? "Empleado actualizado exitosamente" : "Error al actualizar empleado", resultado > 0);
+            }
+            else
+            {
+                var resultado = await _empleadoService!.Crear(empleadoForm);
+                AlertComp?.Show(resultado > 0 ? "Empleado creado exitosamente" : "Error al crear empleado", resultado > 0);
+            }
+            ModalComp?.Close();
+            await CargarEmpleados();
+        }
+        catch (Exception ex)
+        {
+            AlertComp?.Show($"Error: {ex.Message}", false);
+        }
+    }
+
+    private void ConfirmarEliminar(Empleado empleado)
+    {
+        empleadoEnEliminar = empleado.Id;
+        ModalConfirmComp?.Show();
+    }
+
+    private async Task EliminarEmpleado()
+    {
+        try
+        {
+            var resultado = await _empleadoService!.Eliminar(empleadoEnEliminar);
+            AlertComp?.Show(resultado > 0 ? "Empleado eliminado exitosamente" : "Error al eliminar empleado", resultado > 0);
+            await CargarEmpleados();
+        }
+        catch (Exception ex)
+        {
+            AlertComp?.Show($"Error: {ex.Message}", false);
+        }
+    }
+}

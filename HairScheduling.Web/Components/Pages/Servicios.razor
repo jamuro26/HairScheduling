@@ -1,0 +1,155 @@
+@page "/servicios"
+@using HairScheduling.Models
+@using HairScheduling.Web.Services
+@using HairScheduling.Web.Components.Common
+@inject ServicioService ServicioService
+@rendermode InteractiveServer
+
+<div class="container mt-5">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h1>Gestión de Servicios</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <button class="btn btn-success" @onclick="AbrirFormulario">
+                <i class="bi bi-plus"></i> Nuevo Servicio
+            </button>
+        </div>
+    </div>
+
+    <AlertComponent @ref="AlertComp" />
+
+    @if (cargando)
+    {
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <DataTableComponent TItem="Servicio" Items="servicios" OnEdit="EditarServicio" OnDelete="ConfirmarEliminar" />
+    }
+
+    <ModalComponent @ref="ModalComp" Title="@(editando ? "Editar Servicio" : "Nuevo Servicio")" ConfirmButtonText="Guardar">
+        <EditForm Model="servicioForm" OnValidSubmit="GuardarServicio">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label class="form-label">Nombre *</label>
+                <InputText class="form-control" @bind-Value="servicioForm.Nombre" />
+                <ValidationMessage For="() => servicioForm.Nombre" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <InputTextArea class="form-control" @bind-Value="servicioForm.Descripcion" rows="3" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Precio *</label>
+                <InputNumber class="form-control" @bind-Value="servicioForm.Precio" />
+                <ValidationMessage For="() => servicioForm.Precio" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Duración (minutos)</label>
+                <InputNumber class="form-control" @bind-Value="servicioForm.DuracionMinutos" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">
+                    <InputCheckbox @bind-Value="servicioForm.Activo" />
+                    Activo
+                </label>
+            </div>
+        </EditForm>
+    </ModalComponent>
+
+    <ModalComponent @ref="ModalConfirmComp" Title="Confirmar eliminación" ConfirmButtonText="Eliminar" OnConfirmCallback="EliminarServicio">
+        <p>¿Está seguro de que desea eliminar este servicio?</p>
+    </ModalComponent>
+</div>
+
+@code {
+    private ServicioService? _servicioService;
+    private List<Servicio> servicios = [];
+    private Servicio servicioForm = new();
+    private AlertComponent? AlertComp;
+    private ModalComponent? ModalComp;
+    private ModalComponent? ModalConfirmComp;
+    private bool cargando = true;
+    private bool editando = false;
+    private int servicioEnEliminar = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _servicioService = ServicioService;
+        await CargarServicios();
+    }
+
+    private async Task CargarServicios()
+    {
+        cargando = true;
+        servicios = await _servicioService!.ObtenerTodos();
+        cargando = false;
+    }
+
+    private void AbrirFormulario()
+    {
+        editando = false;
+        servicioForm = new Servicio();
+        ModalComp?.Show();
+    }
+
+    private async Task EditarServicio(Servicio servicio)
+    {
+        editando = true;
+        servicioForm = servicio;
+        ModalComp?.Show();
+    }
+
+    private async Task GuardarServicio()
+    {
+        try
+        {
+            if (editando)
+            {
+                var resultado = await _servicioService!.Actualizar(servicioForm.Id, servicioForm);
+                AlertComp?.Show(resultado > 0 ? "Servicio actualizado exitosamente" : "Error al actualizar servicio", resultado > 0);
+            }
+            else
+            {
+                var resultado = await _servicioService!.Crear(servicioForm);
+                AlertComp?.Show(resultado > 0 ? "Servicio creado exitosamente" : "Error al crear servicio", resultado > 0);
+            }
+            ModalComp?.Close();
+            await CargarServicios();
+        }
+        catch (Exception ex)
+        {
+            AlertComp?.Show($"Error: {ex.Message}", false);
+        }
+    }
+
+    private void ConfirmarEliminar(Servicio servicio)
+    {
+        servicioEnEliminar = servicio.Id;
+        ModalConfirmComp?.Show();
+    }
+
+    private async Task EliminarServicio()
+    {
+        try
+        {
+            var resultado = await _servicioService!.Eliminar(servicioEnEliminar);
+            AlertComp?.Show(resultado > 0 ? "Servicio eliminado exitosamente" : "Error al eliminar servicio", resultado > 0);
+            await CargarServicios();
+        }
+        catch (Exception ex)
+        {
+            AlertComp?.Show($"Error: {ex.Message}", false);
+        }
+    }
+}
