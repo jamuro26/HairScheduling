@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="HairScheduling.Api/HairScheduling.Api.csproj" />
+  <Project Path="HairScheduling.Data/HairScheduling.Data.csproj" />
+  <Project Path="HairScheduling.Models/HairScheduling.Models.csproj" />
+  <Project Path="HairScheduling.Web/HairScheduling.Web.csproj" />
+</Solution>
