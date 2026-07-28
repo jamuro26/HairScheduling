@@ -1,0 +1,97 @@
+## WORKSPACE EXECUTIVE SUMMARY (YAML)
+# Generated: 2026-07-22T19:11:09.1800597-06:00
+# Root: C:\Users\RYZEN\AppData\Local\Temp\HairSchedulingApp
+Architecture:
+  Type: Backend (C#/.NET)
+  Scale: 37 relevant source files
+  Components: 0
+  Controllers: 0
+  Models: 0
+  Services: 5
+---
+- File: HairScheduling.Api\HairScheduling.Api.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk.Web'>  <PropertyGroup>   <TargetFramework>net10.0</TargetFramework>   <Nullable>enable</Nullable>   <ImplicitUsings>en..."
+- File: HairScheduling.Data\HairScheduling.Data.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <ItemGroup>   <ProjectReference Include='..\HairScheduling.Models\HairScheduling.Models.csproj' />  </ItemGroup>  <..."
+- File: HairScheduling.Models\HairScheduling.Models.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk'>  <PropertyGroup>   <TargetFramework>net10.0</TargetFramework>   <ImplicitUsings>enable</ImplicitUsings>   <Nullable>..."
+- File: HairScheduling.Web\HairScheduling.Web.csproj
+  Preview: "<Project Sdk='Microsoft.NET.Sdk.Web'>  <PropertyGroup>   <TargetFramework>net10.0</TargetFramework>   <Nullable>enable</Nullable>   <ImplicitUsings>en..."
+- File: HairScheduling.slnx
+  Preview: "<Solution>  <Project Path='HairScheduling.Api/HairScheduling.Api.csproj' />  <Project Path='HairScheduling.Data/HairScheduling.Data.csproj' />  <Proje..."
+- File: IMPLEMENTACION_COMPLETADA.md
+  Preview: "# 🎉 PLAN DE IMPLEMENTACIÓN COMPLETADO ## ✅ Pantallas Frontend Blazor para HairScheduling ### 📊 Estado General: **100% COMPLETADO** ``` █████████████..."
+- File: PROJECT_STATISTICS.md
+  Preview: "# 📊 ESTADÍSTICAS DEL PROYECTO - HAIR SCHEDULING ## 🎯 ESTADO DEL PROYECTO ``` ╔════════════════════════════════════════════════════╗ ║               ..."
+- File: QUICK_START.md
+  Preview: "# ⚡ QUICK START GUIDE ## 🚀 5 Minutos para Ejecutar la Aplicación ### Paso 1: Preparación (1 min) ```bash # Navegar a la carpeta del proyecto cd C:\Us..."
+- File: README.md
+  Preview: "# 💇‍♀️ Hair Scheduling Application ## 🎯 Descripción General **Hair Scheduling** es una aplicación web completa para **gestión de salones de belleza*..."
+- File: RESUMEN_EJECUTIVO_FINAL.md
+  Preview: "# 🎯 RESUMEN EJECUTIVO - PLAN IMPLEMENTADO ## ✅ ESTADO: COMPLETADO AL 100% ``` Plan: 'Crear Pantallas Frontend Blazor para HairScheduling' Fecha de in..."
+- File: HairScheduling.Api\appsettings.Development.json
+  Preview: "{  'Logging': {   'LogLevel': {    'Default': 'Information',    'Microsoft.AspNetCore': 'Warning'   }  } } "
+- File: HairScheduling.Api\appsettings.json
+  Preview: "{  'Logging': {   'LogLevel': {    'Default': 'Information',    'Microsoft.AspNetCore': 'Warning'   }  },  'AllowedHosts': '*' } "
+- File: HairScheduling.Api\Program.cs
+  Preview: "using HairScheduling.Data; using Microsoft.EntityFrameworkCore; var builder = WebApplication.CreateBuilder(args); // Add services to the container bui..."
+- File: HairScheduling.Data\HairSchedulingDbContext.cs
+  Symbols: [HairSchedulingDbContext]
+  Preview: "using Microsoft.EntityFrameworkCore; using HairScheduling.Models; namespace HairScheduling.Data {   public class HairSchedulingDbContext : DbContext  ..."
+- File: HairScheduling.Models\Cita.cs
+  Symbols: [Cita]
+  Preview: "namespace HairScheduling.Models {   public class Cita   {     public int Id { get; set; }     public int ClienteId { get; set; }     public int Emplea..."
+- File: HairScheduling.Models\Cliente.cs
+  Symbols: [Cliente]
+  Preview: "namespace HairScheduling.Models {   public class Cliente   {     public int Id { get; set; }     public string Nombre { get; set; } = string.Empty;   ..."
+- File: HairScheduling.Models\DetalleCita.cs
+  Symbols: [DetalleCita]
+  Preview: "namespace HairScheduling.Models {   public class DetalleCita   {     public int Id { get; set; }     public int CitaId { get; set; }     public int Se..."
+- File: HairScheduling.Models\Empleado.cs
+  Symbols: [Empleado]
+  Preview: "namespace HairScheduling.Models {   public class Empleado   {     public int Id { get; set; }     public string Nombre { get; set; } = string.Empty;  ..."
+- File: HairScheduling.Models\Notificacion.cs
+  Symbols: [Notificacion]
+  Preview: "namespace HairScheduling.Models {   public class Notificacion   {     public int Id { get; set; }     public int UsuarioId { get; set; }     public st..."
+- File: HairScheduling.Models\Pago.cs
+  Symbols: [Pago]
+  Preview: "namespace HairScheduling.Models {   public class Pago   {     public int Id { get; set; }     public int CitaId { get; set; }     public decimal Monto..."
+- File: HairScheduling.Models\Servicio.cs
+  Symbols: [Servicio]
+  Preview: "namespace HairScheduling.Models {   public class Servicio   {     public int Id { get; set; }     public string Nombre { get; set; } = string.Empty;  ..."
+- File: HairScheduling.Models\Usuario.cs
+  Symbols: [Usuario]
+  Preview: "namespace HairScheduling.Models {   public class Usuario   {     public int Id { get; set; }     public string NombreUsuario { get; set; } = string.Em..."
+- File: HairScheduling.Web\appsettings.Development.json
+  Preview: "{  'Logging': {   'LogLevel': {    'Default': 'Information',    'Microsoft.AspNetCore': 'Warning'   }  } } "
+- File: HairScheduling.Web\appsettings.json
+  Preview: "{  'Logging': {   'LogLevel': {    'Default': 'Information',    'Microsoft.AspNetCore': 'Warning'   }  },  'AllowedHosts': '*',  'ApiSettings': {   'B..."
+- File: HairScheduling.Web\DEVELOPER_GUIDE.md
+  Preview: "# 👨‍💻 HairScheduling Frontend - Guía Técnica para Desarrolladores ## 📋 Índice 1. [Arquitectura](#arquitectura) 2. [Estructura de Carpetas](#estruct..."
+- File: HairScheduling.Web\FRONTEND_DOCUMENTATION.md
+  Preview: "# 📊 Documentación - Frontend Blazor HairScheduling ## ✅ Resumen del Proyecto Se ha implementado una **interfaz web completa** en **Blazor Server** pa..."
+- File: HairScheduling.Web\Program.cs
+  Preview: "using HairScheduling.Web.Components; using HairScheduling.Web.Services; var builder = WebApplication.CreateBuilder(args); // Add services to the conta..."
+- File: HairScheduling.Web\USER_GUIDE.md
+  Preview: "# 🎨 HairScheduling Frontend - Guía de Usuario ## 📌 Descripción General **HairScheduling** es una aplicación web moderna construida con **Blazor Serv..."
+- File: HairScheduling.Api\Properties\launchSettings.json
+  Preview: "{  '$schema': 'https://json.schemastore.org/launchsettings.json',  'profiles': {   'http': {    'commandName': 'Project',    'dotnetRunMessages': true..."
+- File: HairScheduling.Web\Properties\launchSettings.json
+  Preview: "{  '$schema': 'https://json.schemastore.org/launchsettings.json',   'profiles': {    'http': {     'commandName': 'Project',     'dotnetRunMessages': ..."
+- File: HairScheduling.Web\Components\Layout\ReconnectModal.razor.js
+  Preview: "// Set up event handlers const reconnectModal = document.getElementById('components-reconnect-modal'); reconnectModal.addEventListener('components-rec..."
+- File: HairScheduling.Web\Components\Services\CitaService.cs
+  Symbols: [CitaService, CitaService]
+  Preview: "using HairScheduling.Models; namespace HairScheduling.Web.Services {   public class CitaService   {     private readonly HttpClient _httpClient;     p..."
+- File: HairScheduling.Web\Components\Services\ClienteService.cs
+  Symbols: [ClienteService, ClienteService]
+  Preview: "using HairScheduling.Models; namespace HairScheduling.Web.Services {   public class ClienteService   {     private readonly HttpClient _httpClient;   ..."
+- File: HairScheduling.Web\Components\Services\EmpleadoService.cs
+  Symbols: [EmpleadoService, EmpleadoService]
+  Preview: "using HairScheduling.Models; namespace HairScheduling.Web.Services {   public class EmpleadoService   {     private readonly HttpClient _httpClient;  ..."
+- File: HairScheduling.Web\Components\Services\PagoService.cs
+  Symbols: [PagoService, PagoService]
+  Preview: "using HairScheduling.Models; namespace HairScheduling.Web.Services {   public class PagoService   {     private readonly HttpClient _httpClient;     p..."
+- File: HairScheduling.Web\Components\Services\ServicioService.cs
+  Symbols: [ServicioService, ServicioService]
+  Preview: "using HairScheduling.Models; namespace HairScheduling.Web.Services {   public class ServicioService   {     private readonly HttpClient _httpClient;  ..."

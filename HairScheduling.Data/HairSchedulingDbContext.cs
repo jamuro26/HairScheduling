@@ -22,6 +22,48 @@ namespace HairScheduling.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Cliente 1 -- N Citas
+            modelBuilder.Entity<Cita>()
+                .HasOne<Cliente>()
+                .WithMany()
+                .HasForeignKey(c => c.ClienteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Empleado 1 -- N Citas
+            modelBuilder.Entity<Cita>()
+                .HasOne<Empleado>()
+                .WithMany()
+                .HasForeignKey(c => c.EmpleadoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Cita 1 -- N DetallesCita
+            modelBuilder.Entity<DetalleCita>()
+                .HasOne<Cita>()
+                .WithMany()
+                .HasForeignKey(d => d.CitaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Servicio 1 -- N DetallesCita
+            modelBuilder.Entity<DetalleCita>()
+                .HasOne<Servicio>()
+                .WithMany()
+                .HasForeignKey(d => d.ServicioId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Cita 1 -- N Pagos
+            modelBuilder.Entity<Pago>()
+                .HasOne<Cita>()
+                .WithMany()
+                .HasForeignKey(p => p.CitaId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Usuario 1 -- N Notificaciones
+            modelBuilder.Entity<Notificacion>()
+                .HasOne<Usuario>()
+                .WithMany()
+                .HasForeignKey(n => n.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
