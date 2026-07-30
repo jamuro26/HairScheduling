@@ -72,8 +72,8 @@
         </div>
     }
 
-    <ModalComponent @ref="ModalComp" Title="Registrar Pago" ConfirmButtonText="Guardar">
-        <EditForm Model="pagoForm" OnValidSubmit="GuardarPago">
+    <ModalComponent @ref="ModalComp" Title="Registrar Pago" ConfirmButtonText="Guardar" OnConfirmCallback="GuardarPago">
+        <EditForm Model="pagoForm">
             <DataAnnotationsValidator />
 
             <div class="mb-3">

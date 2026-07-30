@@ -61,8 +61,8 @@
         </div>
     }
 
-    <ModalComponent @ref="ModalComp" Title="@(editando ? "Editar Cita" : "Nueva Cita")" ConfirmButtonText="Guardar">
-        <EditForm Model="citaForm" OnValidSubmit="GuardarCita">
+    <ModalComponent @ref="ModalComp" Title="@(editando ? "Editar Cita" : "Nueva Cita")" ConfirmButtonText="Guardar" OnConfirmCallback="GuardarCita">
+        <EditForm Model="citaForm">
             <DataAnnotationsValidator />
 
             <div class="mb-3">

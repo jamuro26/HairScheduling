@@ -32,8 +32,8 @@
         <DataTableComponent TItem="Cliente" Items="clientes" OnEdit="EditarCliente" OnDelete="ConfirmarEliminar" />
     }
 
-    <ModalComponent @ref="ModalComp" Title="@(editando ? "Editar Cliente" : "Nuevo Cliente")" ConfirmButtonText="Guardar">
-        <EditForm Model="clienteForm" OnValidSubmit="GuardarCliente">
+    <ModalComponent @ref="ModalComp" Title="@(editando ? "Editar Cliente" : "Nuevo Cliente")" ConfirmButtonText="Guardar" OnConfirmCallback="GuardarCliente">
+        <EditForm Model="clienteForm">
             <DataAnnotationsValidator />
 
             <div class="mb-3">
